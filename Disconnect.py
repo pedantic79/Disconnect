@@ -15,9 +15,9 @@ def signal_handler(signal, frame):
     sys.exit(1)
 
 
-def status(target, interval, stop_event):
+def status(target, stop_event):
     """Print the countdown of how much time is left"""
-
+    interval = 1
 
     # loop while no event occurs
     while (not stop_event.is_set()):
@@ -27,11 +27,13 @@ def status(target, interval, stop_event):
         if (t < 0):
             break
         
-        print("Remaining time: ", str(datetime.timedelta(seconds=round(t))))
+        print("\rRemaining time: ", str(datetime.timedelta(seconds=round(t))), end="")
+        sys.stdout.flush()
         
         # Sleep
         stop_event.wait(interval)
 
+    print()
     print(str(datetime.datetime.now()))
 
 
@@ -51,7 +53,7 @@ def main():
 
 
     # start the thread
-    t = threading.Thread(target=status, args=(time.time() + seconds, 15*60, t_stop))
+    t = threading.Thread(target=status, args=(time.time() + seconds, t_stop))
     t.start()
 
     # set signal so we can cleanly CTRL-C
