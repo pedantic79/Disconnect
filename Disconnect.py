@@ -3,22 +3,32 @@
 
 import argparse
 import time
+import threading
+import datetime
+import signal
+import sys
 
-from threading import Thread
-from threading import Event 
-from queue import Queue
-from datetime import timedelta
+def signal_handler(signal, frame):
+    """CTRL-C signal handler"""
+    t_stop.set()
+    sys.exit(1)
+
 
 def status(target, interval, stop_event):
     """Print the countdown of how much time is left"""
 
-    while True:
+
+    # loop while no event occurs
+    while (not stop_event.is_set()):
         t = target - time.time()
+
+        # if we are past the target time, exit the loop
         if (t < 0):
             break
         
-        print(str(timedelta(seconds=t)))
-
+        print(str(datetime.timedelta(seconds=t)))
+        
+        # Sleep
         stop_event.wait(interval)
 
     print("Finished")
@@ -37,18 +47,26 @@ def parse_args():
 def main():
     seconds = parse_args()
 
-    t_stop = Event()
-    t = Thread(target=status, args=(time.time() + seconds, 10, t_stop))
+
+    # start the thread
+    t = threading.Thread(target=status, args=(time.time() + seconds, 10, t_stop))
     t.start()
 
+    # set signal so we can cleanly CTRL-C
+    signal.signal(signal.SIGINT, signal_handler)
 
+    # sleep for the required amount of time
     time.sleep(seconds)
 
+    # stop the status thread, and wait for it to finish
     t_stop.set()
     t.join()
     print("Finished 2")
 
+    # TODO: EXEC
 
 
+
+t_stop = threading.Event()
 if __name__ == '__main__':
     main()
