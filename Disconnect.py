@@ -2,11 +2,12 @@
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
 import argparse
-import time
-import threading
 import datetime
 import signal
+import subprocess
 import sys
+import threading
+import time
 
 def signal_handler(signal, frame):
     """CTRL-C signal handler"""
@@ -61,9 +62,9 @@ def main():
     # stop the status thread, and wait for it to finish
     t_stop.set()
     t.join()
-    print("Finished 2")
 
-    # TODO: EXEC
+    subprocess.call(["/cygdrive/c/Program Files (x86)/AT&T Network Client/NetClient", "-exitnow"])
+    print(str(datetime.datetime.now()))
 
 
 
