@@ -3,17 +3,29 @@
 
 import argparse
 import time
-from threading import Thread
-import datetime
-from queue import Queue
 
-def status():
-    print("Hello World")
-    seconds = q.get()
-    print(seconds)
+from threading import Thread
+from threading import Event 
+from queue import Queue
+from datetime import timedelta
+
+def status(target, interval, stop_event):
+    """Print the countdown of how much time is left"""
+
+    while True:
+        t = target - time.time()
+        if (t < 0):
+            break
+        
+        print(str(timedelta(seconds=t)))
+
+        stop_event.wait(interval)
+
+    print("Finished")
 
 
 def parse_args():
+    """Parse arguments and return amount of seconds"""
     parser = argparse.ArgumentParser()
     parser.add_argument('hour', type=int)
     parser.add_argument('minutes', type=int)
@@ -21,41 +33,22 @@ def parse_args():
 
     return 60 * (60 * args.hour + args.minutes)
 
-def print_time(seconds=None):
-    if (seconds == None):
-        s = time.time()
-    else:
-        s = seconds
-
-
-    print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(s)))
-
 
 def main():
     seconds = parse_args()
-    q.put(seconds)
-    interval = 89
 
-    t = Thread(target=status)
+    t_stop = Event()
+    t = Thread(target=status, args=(time.time() + seconds, 10, t_stop))
     t.start()
 
-    print('Sleeping until: ')
-    print_time(seconds + time.time())
 
-    while (seconds > interval): 
-        print('Sleeping for {0} second(s)'.format(seconds))
-        print_time()
-        time.sleep(interval)
-        seconds -= interval
-
-    print('Sleeping for {0} seconds(s)'.format(seconds))
-    print_time()
     time.sleep(seconds)
 
-    print_time()
+    t_stop.set()
+    t.join()
+    print("Finished 2")
 
 
 
-q = Queue()
 if __name__ == '__main__':
     main()
