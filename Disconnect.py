@@ -27,22 +27,23 @@ def status(target, interval, stop_event):
         if (t < 0):
             break
         
-        print(str(datetime.timedelta(seconds=t)))
+        print("Remaining time: ", str(datetime.timedelta(seconds=round(t))))
         
         # Sleep
         stop_event.wait(interval)
 
-    print("Finished")
+    print(str(datetime.datetime.now()))
 
 
 def parse_args():
     """Parse arguments and return amount of seconds"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('hour', type=int)
+    parser.add_argument('hours', type=int)
     parser.add_argument('minutes', type=int)
+    parser.add_argument('seconds', type=int, nargs='?', default=0)
     args = parser.parse_args()
 
-    return 60 * (60 * args.hour + args.minutes)
+    return 60 * (60 * args.hours + args.minutes) + args.seconds
 
 
 def main():
@@ -50,7 +51,7 @@ def main():
 
 
     # start the thread
-    t = threading.Thread(target=status, args=(time.time() + seconds, 10, t_stop))
+    t = threading.Thread(target=status, args=(time.time() + seconds, 15*60, t_stop))
     t.start()
 
     # set signal so we can cleanly CTRL-C
@@ -63,8 +64,8 @@ def main():
     t_stop.set()
     t.join()
 
+    print("Executing...")
     subprocess.call(["/cygdrive/c/Program Files (x86)/AT&T Network Client/NetClient", "-exitnow"])
-    print(str(datetime.datetime.now()))
 
 
 
