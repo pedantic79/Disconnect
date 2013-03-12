@@ -3,14 +3,14 @@
 
 import argparse
 import time
-import threading
+from threading import Thread
 import datetime
+from queue import Queue
 
-class StatusThread(threading.Thread):
-    def run(self):
-        print("Hello World")
-        print_time()
-
+def status():
+    print("Hello World")
+    seconds = q.get()
+    print(seconds)
 
 
 def parse_args():
@@ -33,9 +33,10 @@ def print_time(seconds=None):
 
 def main():
     seconds = parse_args()
+    q.put(seconds)
     interval = 89
 
-    t = StatusThread()
+    t = Thread(target=status)
     t.start()
 
     print('Sleeping until: ')
@@ -55,6 +56,6 @@ def main():
 
 
 
-
+q = Queue()
 if __name__ == '__main__':
     main()
