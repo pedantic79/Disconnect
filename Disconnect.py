@@ -10,27 +10,34 @@ import threading
 import time
 
 class Borg:
-    """Borg pattern to allow our signal handler retrieve the event instance"""
+    """Borg pattern to implement singleton"""
 
     _collective = {}
 
+    def __new__(cls, *args, **kwargs):
+        """new-style borg pattern implementation"""
+        self = object.__new__(cls, *args, **kwargs)
+        self.__dict__ = cls._collective
+        return self
+
+class Event(Borg):
+    """Store our threading.Event object"""
+
+    _event = None
+
     def __init__(self):
-        """Implementation of the borg pattern"""
-        self.__dict__ = self._collective
+        Borg.__init__(self)
+        if (self._event == None):
+            self._event = threading.Event()
 
     @property
     def event(self):
         return getattr(self, '_event', None)
 
-    @event.setter
-    def event(self, val):
-        self._event = val
-
-
 
 def signal_handler(signal, frame):
     """CTRL-C signal handler"""
-    Borg().event.set()
+    Event().event.set()
     sys.exit(1)
 
 
@@ -69,9 +76,7 @@ def parse_args():
 
 def main():
     seconds = parse_args()
-
-    t_stop = threading.Event()
-    Borg().event = t_stop
+    t_stop = Event().event
 
     # start the thread
     t = threading.Thread(target=status, args=(time.time() + seconds, t_stop))
