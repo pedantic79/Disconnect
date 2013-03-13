@@ -9,9 +9,28 @@ import sys
 import threading
 import time
 
+class Borg:
+    """Borg pattern to allow our signal handler retrieve the event instance"""
+
+    _collective = {}
+
+    def __init__(self):
+        """Implementation of the borg pattern"""
+        self.__dict__ = self._collective
+
+    @property
+    def event(self):
+        return getattr(self, '_event', None)
+
+    @event.setter
+    def event(self, val):
+        self._event = val
+
+
+
 def signal_handler(signal, frame):
     """CTRL-C signal handler"""
-    t_stop.set()
+    Borg().event.set()
     sys.exit(1)
 
 
@@ -51,6 +70,8 @@ def parse_args():
 def main():
     seconds = parse_args()
 
+    t_stop = threading.Event()
+    Borg().event = t_stop
 
     # start the thread
     t = threading.Thread(target=status, args=(time.time() + seconds, t_stop))
@@ -70,7 +91,5 @@ def main():
     subprocess.call(["/cygdrive/c/Program Files (x86)/AT&T Network Client/NetClient", "-exitnow"])
 
 
-
-t_stop = threading.Event()
 if __name__ == '__main__':
     main()
