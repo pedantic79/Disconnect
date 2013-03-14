@@ -43,7 +43,7 @@ def signal_handler(signal, frame):
 
 def status(target):
     """Print the countdown of how much time is left"""
-    stop_event = Event.event
+    stop_event = Event().event
     interval = 1
 
     # loop while no event occurs
@@ -72,12 +72,16 @@ def parse_args():
     parser.add_argument('seconds', type=int, nargs='?', default=0)
     args = parser.parse_args()
 
+    td = datetime.timedelta(hours=args.hours, minutes=args.minutes, seconds=args.seconds)
+
+    print("ETA: ", str(datetime.datetime.now() + td))
     return 60 * (60 * args.hours + args.minutes) + args.seconds
 
 
 def main():
     seconds = parse_args()
     t_stop = Event().event
+
 
     # start the thread
     t = threading.Thread(target=status, args=(time.time() + seconds,))
