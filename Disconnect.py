@@ -41,8 +41,9 @@ def signal_handler(signal, frame):
     sys.exit(1)
 
 
-def status(target, stop_event):
+def status(target):
     """Print the countdown of how much time is left"""
+    stop_event = Event.event
     interval = 1
 
     # loop while no event occurs
@@ -79,7 +80,7 @@ def main():
     t_stop = Event().event
 
     # start the thread
-    t = threading.Thread(target=status, args=(time.time() + seconds, t_stop))
+    t = threading.Thread(target=status, args=(time.time() + seconds,))
     t.start()
 
     # set signal so we can cleanly CTRL-C
