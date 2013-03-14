@@ -41,20 +41,21 @@ def signal_handler(signal, frame):
     sys.exit(1)
 
 
-def status(target):
+def status(time_delta):
     """Print the countdown of how much time is left"""
     stop_event = Event().event
+    target = datetime.datetime.now() + time_delta
     interval = 1
 
     # loop while no event occurs
     while (not stop_event.is_set()):
-        t = target - time.time()
+        seconds = round((target - datetime.datetime.now()).total_seconds())
 
         # if we are past the target time, exit the loop
-        if (t < 0):
+        if (seconds < 0):
             break
         
-        print("\rRemaining time: ", str(datetime.timedelta(seconds=round(t))), end="")
+        print("\rRemaining time: ", str(datetime.timedelta(seconds=seconds)), end="")
         sys.stdout.flush()
         
         # Sleep
@@ -75,23 +76,23 @@ def parse_args():
     td = datetime.timedelta(hours=args.hours, minutes=args.minutes, seconds=args.seconds)
 
     print("ETA: ", str(datetime.datetime.now() + td))
-    return 60 * (60 * args.hours + args.minutes) + args.seconds
+    return td
 
 
 def main():
-    seconds = parse_args()
+    td = parse_args()
     t_stop = Event().event
 
 
     # start the thread
-    t = threading.Thread(target=status, args=(time.time() + seconds,))
+    t = threading.Thread(target=status, args=(td,))
     t.start()
 
     # set signal so we can cleanly CTRL-C
     signal.signal(signal.SIGINT, signal_handler)
 
     # sleep for the required amount of time
-    time.sleep(seconds)
+    time.sleep(td.total_seconds())
 
     # stop the status thread, and wait for it to finish
     t_stop.set()
