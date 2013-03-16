@@ -10,18 +10,17 @@ import threading
 import time
 
 class Borg:
-    """Borg pattern to implement singleton"""
+    """Base class to implement new-style borg pattern"""
 
     _collective = {}
 
     def __new__(cls, *args, **kwargs):
-        """new-style borg pattern implementation"""
         self = object.__new__(cls, *args, **kwargs)
         self.__dict__ = cls._collective
         return self
 
 class Event(Borg):
-    """Store our threading.Event object"""
+    """Singleton to store and retrieve a threading.Event object"""
 
     _event = None
 
@@ -55,14 +54,15 @@ def status(time_delta):
         if (seconds < 0):
             break
         
-        print("\rRemaining time: ", str(datetime.timedelta(seconds=seconds)), end="")
+        # print time on the same line
+        print("\rRemaining: ", str(datetime.timedelta(seconds=seconds)), end="")
         sys.stdout.flush()
         
-        # Sleep
+        # sleep
         stop_event.wait(interval)
 
     print()
-    print(str(datetime.datetime.now()))
+    print("NOW: ", str(datetime.datetime.now()))
 
 
 def parse_args():
@@ -98,7 +98,7 @@ def main():
     t_stop.set()
     t.join()
 
-    print("Executing...")
+    print("Executing Phase Shift...")
     subprocess.call(["/cygdrive/c/Program Files (x86)/AT&T Network Client/NetClient", "-exitnow"])
 
 
