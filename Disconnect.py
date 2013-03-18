@@ -26,7 +26,7 @@ class Event(Borg):
 
     def __init__(self):
         Borg.__init__(self)
-        if (self._event == None):
+        if self._event == None:
             self._event = threading.Event()
 
     @property
@@ -47,22 +47,22 @@ def status(time_delta):
     interval = 1
 
     # loop while no event occurs
-    while (not stop_event.is_set()):
+    while not stop_event.is_set():
         seconds = round((target - datetime.datetime.now()).total_seconds())
 
         # if we are past the target time, exit the loop
-        if (seconds < 0):
+        if seconds < 0:
             break
         
         # print time on the same line
-        print("\rRemaining: ", str(datetime.timedelta(seconds=seconds)), end="")
+        print('\rRemaining: ', str(datetime.timedelta(seconds=seconds)), end='')
         sys.stdout.flush()
         
         # sleep
         stop_event.wait(interval)
 
     print()
-    print("NOW: ", str(datetime.datetime.now()))
+    print('NOW: ', str(datetime.datetime.now()))
 
 
 def parse_args():
@@ -75,7 +75,7 @@ def parse_args():
 
     td = datetime.timedelta(hours=args.hours, minutes=args.minutes, seconds=args.seconds)
 
-    print("ETA: ", str(datetime.datetime.now() + td))
+    print('ETA: ', str(datetime.datetime.now() + td))
     return td
 
 
@@ -98,8 +98,8 @@ def main():
     t_stop.set()
     t.join()
 
-    print("Executing Phase Shift...")
-    subprocess.call(["/cygdrive/c/Program Files (x86)/AT&T Network Client/NetClient", "-exitnow"])
+    print('Executing Phase Shift...')
+    subprocess.call(['/cygdrive/c/Program Files (x86)/AT&T Network Client/NetClient', '-exitnow'])
 
 
 if __name__ == '__main__':
