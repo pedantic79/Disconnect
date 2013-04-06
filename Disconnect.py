@@ -39,6 +39,9 @@ def signal_handler(signal, frame):
     Event().event.set()
     sys.exit(1)
 
+def round_half_up(f):
+    return int(f + -.5 if f < 0 else .5)
+
 
 def status(time_delta):
     """Print the countdown of how much time is left"""
@@ -48,7 +51,7 @@ def status(time_delta):
 
     # loop while no event occurs
     while not stop_event.is_set():
-        seconds = round((target - datetime.datetime.now()).total_seconds())
+        seconds = round_half_up((target - datetime.datetime.now()).total_seconds())
 
         # if we are past the target time, exit the loop
         if seconds < 0:
