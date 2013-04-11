@@ -19,6 +19,7 @@ class Borg:
         self.__dict__ = cls._collective
         return self
 
+
 class Event(Borg):
     """Singleton to store and retrieve a threading.Event object"""
 
@@ -36,11 +37,13 @@ class Event(Borg):
 
 def signal_handler(signal, frame):
     """CTRL-C signal handler"""
-    Event().event.set()
+    Event().event.set() # stop the status thread
     sys.exit(1)
 
+
 def round_half_up(f):
-    return int(f + -.5 if f < 0 else .5)
+    """Have sane rounding where .5 and higher always rounds away from 0"""
+    return int(f + (-.5 if f < 0 else .5)) 
 
 
 def status(time_delta):
@@ -85,7 +88,6 @@ def parse_args():
 def main():
     td = parse_args()
     t_stop = Event().event
-
 
     # start the thread
     t = threading.Thread(target=status, args=(td,))
