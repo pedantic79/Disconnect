@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
+from __future__ import print_function
+
 import argparse
 import datetime
 import signal
@@ -9,7 +11,7 @@ import sys
 import threading
 import time
 
-class Borg:
+class Borg(object):
     """Base class to implement new-style borg pattern"""
 
     _collective = {}
