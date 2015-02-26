@@ -105,7 +105,7 @@ def main():
     t_stop.set()
     t.join()
 
-    print('Executing Phase Shift...')
+    print('Executing Disconnect...')
     subprocess.call(['/cygdrive/c/Program Files (x86)/AT&T Network Client/NetClient', '-exitnow'])
 
 
