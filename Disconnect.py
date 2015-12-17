@@ -1,10 +1,11 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
 from __future__ import print_function
 
 import argparse
 import datetime
+import platform
 import signal
 import subprocess
 import sys
@@ -106,7 +107,10 @@ def main():
     t.join()
 
     print('Executing Disconnect...')
-    subprocess.call(['/cygdrive/c/Program Files (x86)/AT&T Network Client/NetClient', '-exitnow'])
+    if platform.system() == 'Darwin':
+        subprocess.call(['/opt/cisco/anyconnect/bin/vpn', 'disconnect'])
+    else:
+        subprocess.call(['/cygdrive/c/Program Files (x86)/AT&T Network Client/NetClient', '-exitnow'])
 
 
 if __name__ == '__main__':
