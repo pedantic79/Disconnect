@@ -109,6 +109,8 @@ def main():
     print('Executing Disconnect...')
     if platform.system() == 'Darwin':
         subprocess.call(['/opt/cisco/anyconnect/bin/vpn', 'disconnect'])
+        subprocess.call(['/usr/bin/osascript', '-e', 
+            'quit app \"Cisco AnyConnect Secure Mobility Client\"'])
     else:
         subprocess.call(['/cygdrive/c/Program Files (x86)/AT&T Network Client/NetClient', '-exitnow'])
 
