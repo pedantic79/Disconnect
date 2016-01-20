@@ -62,11 +62,11 @@ def status(time_delta):
         # if we are past the target time, exit the loop
         if seconds < 0:
             break
-        
+
         # print time on the same line
         print('\rRemaining: ', str(datetime.timedelta(seconds=seconds)), end='')
         sys.stdout.flush()
-        
+
         # sleep
         stop_event.wait(interval)
 
