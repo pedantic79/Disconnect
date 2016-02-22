@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
-
+# pylint: disable=locally-disabled,too-few-public-methods
+"""Disconnect from vpn on a timer"""
 from __future__ import print_function
+from __future__ import absolute_import
 
 import argparse
 import datetime
@@ -22,7 +24,6 @@ class Borg(object):
         self.__dict__ = cls._collective
         return self
 
-
 class Event(Borg):
     """Singleton to store and retrieve a threading.Event object"""
 
@@ -30,23 +31,24 @@ class Event(Borg):
 
     def __init__(self):
         Borg.__init__(self)
-        if self._event == None:
+        if self._event is None:
             self._event = threading.Event()
 
     @property
     def event(self):
+        """Get event attribute"""
         return getattr(self, '_event', None)
 
 
-def signal_handler(signal, frame):
+def cb_signal_handler(sig, frame):
     """CTRL-C signal handler"""
     Event().event.set() # stop the status thread
     sys.exit(1)
 
 
-def round_half_up(f):
+def round_half_up(flt):
     """Have sane rounding where .5 and higher always rounds away from 0"""
-    return int(f + (-.5 if f < 0 else .5)) 
+    return int(flt + (-.5 if flt < 0 else .5))
 
 
 def status(time_delta):
@@ -82,37 +84,41 @@ def parse_args():
     parser.add_argument('seconds', type=int, nargs='?', default=0)
     args = parser.parse_args()
 
-    td = datetime.timedelta(hours=args.hours, minutes=args.minutes, seconds=args.seconds)
+    time_delta = datetime.timedelta(hours=args.hours, minutes=args.minutes, seconds=args.seconds)
 
-    print('ETA: ', str(datetime.datetime.now() + td))
-    return td
+    print('ETA: ', str(datetime.datetime.now() + time_delta))
+    return time_delta
 
 
 def main():
-    td = parse_args()
+    """Main function"""
+    time_delta = parse_args()
     t_stop = Event().event
 
     # start the thread
-    t = threading.Thread(target=status, args=(td,))
-    t.start()
+    thr = threading.Thread(target=status, args=(time_delta,))
+    thr.start()
 
     # set signal so we can cleanly CTRL-C
-    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGINT, cb_signal_handler)
 
     # sleep for the required amount of time
-    time.sleep(td.total_seconds())
+    time.sleep(time_delta.total_seconds())
 
     # stop the status thread, and wait for it to finish
     t_stop.set()
-    t.join()
+    thr.join()
 
     print('Executing Disconnect...')
     if platform.system() == 'Darwin':
         subprocess.call(['/opt/cisco/anyconnect/bin/vpn', 'disconnect'])
-        subprocess.call(['/usr/bin/osascript', '-e', 
+        subprocess.call([
+            '/usr/bin/osascript', '-e',
             'quit app \"Cisco AnyConnect Secure Mobility Client\"'])
     else:
-        subprocess.call(['/cygdrive/c/Program Files (x86)/AT&T Network Client/NetClient', '-exitnow'])
+        subprocess.call([
+            '/cygdrive/c/Program Files (x86)/AT&T Network Client/NetClient',
+            '-exitnow'])
 
 
 if __name__ == '__main__':
