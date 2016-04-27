@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 # pylint: disable=locally-disabled,too-few-public-methods
-"""Disconnect from vpn on a timer"""
+"""Disconnect from vpn on a timer."""
 from __future__ import print_function
 from __future__ import absolute_import
 
@@ -14,59 +14,61 @@ import sys
 import threading
 import time
 
-class Borg(object):
-    """Base class to implement new-style borg pattern"""
 
+class _Borg(object):
     _collective = {}
 
     def __new__(cls, *args, **kwargs):
+        """__new__."""
         self = object.__new__(cls, *args, **kwargs)
         self.__dict__ = cls._collective
         return self
 
-class Event(Borg):
-    """Singleton to store and retrieve a threading.Event object"""
 
+class _Event(_Borg):
     _event = None
 
     def __init__(self):
-        Borg.__init__(self)
+        """Constructor."""
+        _Borg.__init__(self)
         if self._event is None:
             self._event = threading.Event()
 
     @property
     def event(self):
-        """Get event attribute"""
+        """Get event attribute."""
         return getattr(self, '_event', None)
 
 
 def cb_signal_handler(sig, frame):
-    """CTRL-C signal handler"""
-    Event().event.set() # stop the status thread
+    """CTRL-C signal handler."""
+    _Event().event.set()  # stop the status thread
     sys.exit(1)
 
 
 def round_half_up(flt):
-    """Have sane rounding where .5 and higher always rounds away from 0"""
+    """Have sane rounding where .5 and higher always rounds away from 0."""
     return int(flt + (-.5 if flt < 0 else .5))
 
 
 def status(time_delta):
-    """Print the countdown of how much time is left"""
-    stop_event = Event().event
+    """Print the countdown of how much time is left."""
+    stop_event = _Event().event
     target = datetime.datetime.now() + time_delta
     interval = 1
 
     # loop while no event occurs
     while not stop_event.is_set():
-        seconds = round_half_up((target - datetime.datetime.now()).total_seconds())
+        seconds = round_half_up(
+                    (target - datetime.datetime.now()).total_seconds())
 
         # if we are past the target time, exit the loop
         if seconds < 0:
             break
 
         # print time on the same line
-        print('\rRemaining: ', str(datetime.timedelta(seconds=seconds)), end='')
+        print('\rRemaining: ',
+              str(datetime.timedelta(seconds=seconds)), end='')
         sys.stdout.flush()
 
         # sleep
@@ -77,23 +79,25 @@ def status(time_delta):
 
 
 def parse_args():
-    """Parse arguments and return amount of seconds"""
+    """Parse arguments and return amount of seconds."""
     parser = argparse.ArgumentParser()
     parser.add_argument('hours', type=int)
     parser.add_argument('minutes', type=int)
     parser.add_argument('seconds', type=int, nargs='?', default=0)
     args = parser.parse_args()
 
-    time_delta = datetime.timedelta(hours=args.hours, minutes=args.minutes, seconds=args.seconds)
+    time_delta = datetime.timedelta(hours=args.hours,
+                                    minutes=args.minutes,
+                                    seconds=args.seconds)
 
     print('ETA: ', str(datetime.datetime.now() + time_delta))
     return time_delta
 
 
 def main():
-    """Main function"""
+    """Main function."""
     time_delta = parse_args()
-    t_stop = Event().event
+    t_stop = _Event().event
 
     # start the thread
     thr = threading.Thread(target=status, args=(time_delta,))
